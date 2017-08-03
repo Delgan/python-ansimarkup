@@ -49,6 +49,30 @@ def test_errors():
 		p('<b>1</d>')
 
 
+def test_unknown_tags():
+	assert p('<tag>1</tag>') == '<tag>1</tag>'
+	assert p('<tag>') == '<tag>'
+	assert p('</tag>') == '</tag>'
+
+	assert p('<b>1</b><tag>2</tag>') == S.BRIGHT + '1' + S.RESET_ALL + '<tag>2</tag>'
+	assert p('<tag>1</tag><b>2</b>') == '<tag>1</tag>' + S.BRIGHT + '2' + S.RESET_ALL
+
+	assert p('<b>1</b><tag>2</tag><b>3</b>') == S.BRIGHT + '1' + S.RESET_ALL + '<tag>2</tag>' + S.BRIGHT + '3' + S.RESET_ALL
+	assert p('<tag>1</tag><b>2</b><tag>3</tag>') == '<tag>1</tag>' + S.BRIGHT + '2' + S.RESET_ALL + '<tag>3</tag>'
+
+	assert p('<b><tag>1</tag></b>') == S.BRIGHT + '<tag>1</tag>' + S.RESET_ALL
+	assert p('<tag><b>1</b></tag>') == '<tag>' + S.BRIGHT + '1' + S.RESET_ALL + '</tag>'
+
+	assert p('<b><tag>1</tag>') == S.BRIGHT + '<tag>1</tag>' + S.RESET_ALL
+	assert p('<tag>1</tag><b>') == '<tag>1</tag>' + S.BRIGHT + S.RESET_ALL
+
+	assert p('<b><tag>') == S.BRIGHT + '<tag>' + S.RESET_ALL
+	assert p('<tag><b>') == "<tag>" + S.BRIGHT + S.RESET_ALL
+
+	assert p('<b></tag>') == S.BRIGHT + '</tag>' + S.RESET_ALL
+	assert p('</tag><b>') == "</tag>" + S.BRIGHT + S.RESET_ALL
+
+
 def test_strip(am):
 	assert am.strip('<b>1</b>2<d>3</d>') == '123'
 	assert am.strip('<bold,red,yellow>1</bold,red,yellow>') == '1'
@@ -87,6 +111,7 @@ def test_tag_chars():
 	r1 = p('0<b>1<d>2</d>3</b>4')
 	r2 = am.parse('0{b}1{d}2{/d}3{/b}4')
 	assert r1 == r2 == '0' + S.BRIGHT + '1' + S.DIM + '2' + S.RESET_ALL + S.BRIGHT + '3' + S.RESET_ALL + '4'
+
 
 @mark.xfail
 def test_limitations():
